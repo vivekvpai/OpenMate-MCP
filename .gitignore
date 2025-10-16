@@ -10,3 +10,6 @@ yarn-error.log*
 # Optional: environment files
 .env
 
+# Optional
+openmate-mcp-0.1.0.tgz
+

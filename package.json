@@ -1,19 +1,15 @@
 {
   "name": "openmate-mcp",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "MCP server for OpenMate repository management",
-  "main": "dist/server.js",
+  "type": "module",
+  "main": "bin/server.js",
   "bin": {
     "openmate-mcp": "./bin/server.js"
   },
-  "type": "module",
   "scripts": {
-    "build": "babel src -d dist",
-    "prepare": "npm run build",
-    "start": "node dist/server.js",
-    "dev": "nodemon --exec babel-node src/server.js",
-    "test": "node dist/server.js",
-    "prepublishOnly": "npm run build"
+    "start": "node bin/server.js",
+    "test": "node bin/server.js"
   },
   "keywords": [
     "mcp",
@@ -42,17 +38,10 @@
   "author": "Pai",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
-    "zod": "^3.22.4"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.23.0",
-    "@babel/core": "^7.23.0",
-    "@babel/preset-env": "^7.23.0",
-    "nodemon": "^3.0.1"
+    "@modelcontextprotocol/sdk": "^1.20.0",
+    "zod": "^3.25.76"
   },
   "files": [
-    "dist",
     "bin",
     "README.md"
   ],
