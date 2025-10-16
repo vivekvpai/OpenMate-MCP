@@ -1,0 +1,70 @@
+{
+  "name": "openmate-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for OpenMate repository management",
+  "main": "dist/server.js",
+  "bin": {
+    "openmate-mcp": "./bin/server.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "babel src -d dist",
+    "prepare": "npm run build",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec babel-node src/server.js",
+    "test": "node dist/server.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "OpenMate",
+    "ide",
+    "repository-manager",
+    "repo",
+    "vscode",
+    "windsurf",
+    "cursor",
+    "productivity",
+    "quick-open",
+    "open repositories",
+    "developer tools",
+    "collections",
+    "multi-repo",
+    "project manager",
+    "code shortcuts",
+    "open multiple projects",
+    "workspace manager",
+    "local repos",
+    "dev workflow",
+    "claude",
+    "ai"
+  ],
+  "author": "Pai",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.0",
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "nodemon": "^3.0.1"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vivekpai/OpenMate-MCP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vivekpai/OpenMate-MCP/issues"
+  },
+  "homepage": "https://github.com/vivekpai/OpenMate-MCP#readme"
+}
