@@ -50,10 +50,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vivekpai/OpenMate-MCP.git"
+    "url": "https://github.com/vivekvpai/OpenMate-MCP"
   },
   "bugs": {
-    "url": "https://github.com/vivekpai/OpenMate-MCP/issues"
+    "url": "https://github.com/vivekvpai/OpenMate-MCP/issues"
   },
-  "homepage": "https://github.com/vivekpai/OpenMate-MCP#readme"
+  "homepage": "https://github.com/vivekvpai/OpenMate-MCP#readme"
 }
