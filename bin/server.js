@@ -3,9 +3,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import fs from "fs";
+import path from "path";
+import os from "os";
+import { spawn } from "child_process";
 
 // Configuration
 const STORE_DIR = path.join(os.homedir(), ".openmate");
@@ -49,6 +50,176 @@ function normalizeName(name) {
   return name.trim().toLowerCase();
 }
 
+// IDE opening functions
+function openVS(repoPath) {
+  if (process.platform === "darwin") {
+    spawn("open", ["-a", "Visual Studio Code", repoPath], {
+      stdio: "ignore",
+      detached: true,
+    });
+  } else {
+    attemptLaunch(
+      [
+        { cmd: "code", args: [repoPath] },
+        { cmd: "code-insiders", args: [repoPath] },
+      ],
+      {
+        onFail: () => {
+          console.error(
+            "❌ Could not find VS Code CLI ('code'). Install it via VS Code settings."
+          );
+          process.exit(1);
+        },
+      }
+    );
+  }
+}
+
+function openWS(repoPath) {
+  if (process.platform === "darwin") {
+    spawn("open", ["-a", "Windsurf", repoPath], {
+      stdio: "ignore",
+      detached: true,
+    });
+  } else {
+    attemptLaunch([{ cmd: "windsurf", args: [repoPath] }], {
+      onFail: () => {
+        console.error("❌ Could not find Windsurf CLI ('windsurf').");
+        process.exit(1);
+      },
+    });
+  }
+}
+
+function openCS(repoPath) {
+  if (process.platform === "darwin") {
+    spawn("open", ["-a", "Cursor", repoPath], {
+      stdio: "ignore",
+      detached: true,
+    });
+  } else {
+    attemptLaunch([{ cmd: "cursor", args: [repoPath] }], {
+      onFail: () => console.error("❌ Cursor CLI not found."),
+    });
+  }
+}
+
+function openIJ(repoPath) {
+  const isWindows = process.platform === "win32";
+  const intellijPaths = [];
+
+  if (isWindows) {
+    intellijPaths.push({
+      cmd: "idea64.exe",
+      args: [repoPath],
+      paths: [
+        path.join(
+          process.env.LOCALAPPDATA,
+          "JetBrains",
+          "IntelliJ*",
+          "bin",
+          "idea64.exe"
+        ),
+        path.join(
+          process.env.PROGRAMFILES,
+          "JetBrains",
+          "IntelliJ*",
+          "bin",
+          "idea64.exe"
+        ),
+      ],
+    });
+  } else {
+    // macOS paths
+    intellijPaths.push(
+      { cmd: "open", args: ["-a", "IntelliJ IDEA", repoPath] },
+      { cmd: "open", args: ["-a", "IntelliJ IDEA CE", repoPath] },
+      { cmd: "open", args: ["-a", "IntelliJ IDEA Ultimate", repoPath] },
+      { cmd: "idea", args: [repoPath] }
+    );
+  }
+
+  // Common paths
+  intellijPaths.push(
+    { cmd: "idea", args: [repoPath] },
+    { cmd: "intellij", args: [repoPath] }
+  );
+
+  attemptLaunch(intellijPaths, {
+    onFail: () =>
+      console.error(
+        "❌ IntelliJ IDEA not found. Make sure it's installed and in your PATH."
+      ),
+  });
+}
+
+function openPC(repoPath) {
+  const isWindows = process.platform === "win32";
+  const pycharmPaths = [];
+
+  if (isWindows) {
+    pycharmPaths.push({
+      cmd: "pycharm64.exe",
+      args: [repoPath],
+      paths: [
+        path.join(
+          process.env.LOCALAPPDATA,
+          "Programs",
+          "PyCharm*",
+          "bin",
+          "pycharm64.exe"
+        ),
+        path.join(
+          process.env.PROGRAMFILES,
+          "JetBrains",
+          "PyCharm*",
+          "bin",
+          "pycharm64.exe"
+        ),
+      ],
+    });
+  } else {
+    // macOS paths
+    pycharmPaths.push(
+      { cmd: "open", args: ["-a", "PyCharm", repoPath] },
+      { cmd: "open", args: ["-a", "PyCharm CE", repoPath] },
+      { cmd: "open", args: ["-a", "PyCharm Professional", repoPath] },
+      { cmd: "pycharm", args: [repoPath] }
+    );
+  }
+
+  // Common paths
+  pycharmPaths.push(
+    { cmd: "pycharm", args: [repoPath] },
+    { cmd: "pycharm-professional", args: [repoPath] },
+    { cmd: "pycharm-community", args: [repoPath] }
+  );
+
+  attemptLaunch(pycharmPaths, {
+    onFail: () =>
+      console.error(
+        "❌ PyCharm not found. Make sure it's installed and in your PATH."
+      ),
+  });
+}
+
+function attemptLaunch(candidates) {
+  const tryOne = (i) => {
+    if (i >= candidates.length) return;
+    const { cmd, args } = candidates[i];
+
+    const child = spawn(cmd, args, {
+      stdio: "ignore",
+      detached: true,
+      shell: true,
+    });
+    child.on("error", () => tryOne(i + 1));
+    child.unref?.();
+  };
+
+  tryOne(0);
+}
+
 // Create server instance
 const server = new McpServer({
   name: "openmate",
@@ -60,19 +231,23 @@ server.tool(
   "list-repos",
   "List all repositories and collections",
   {
-    type: z.enum(["all", "repos", "collections"]).optional().default("all").describe("What to list: all, repos only, or collections only")
+    type: z
+      .enum(["all", "repos", "collections"])
+      .optional()
+      .default("all")
+      .describe("What to list: all, repos only, or collections only"),
   },
   async ({ type = "all" }) => {
     try {
       const store = loadStore();
       let output = "";
-      
+
       if (type === "all" || type === "repos") {
         const repoEntries = Object.entries(store.repos);
         if (repoEntries.length > 0) {
           output += "📁 Repositories:\n";
           repoEntries.forEach(([name, data], index) => {
-            const repoPath = typeof data === 'string' ? data : data.path;
+            const repoPath = typeof data === "string" ? data : data.path;
             output += `  ${index + 1}. ${name} -> ${repoPath}\n`;
           });
           output += "\n";
@@ -80,30 +255,33 @@ server.tool(
           output += "📁 No repositories found\n\n";
         }
       }
-      
+
       if (type === "all" || type === "collections") {
         const collectionEntries = Object.entries(store.collections);
         if (collectionEntries.length > 0) {
           output += "📚 Collections:\n";
           collectionEntries.forEach(([key, collection], index) => {
-            const repos = collection.repos || (Array.isArray(collection) ? collection : []);
-            output += `  ${index + 1}. ${collection.name || key} (${repos.length} repos)\n`;
+            const repos =
+              collection.repos || (Array.isArray(collection) ? collection : []);
+            output += `  ${index + 1}. ${collection.name || key} (${
+              repos.length
+            } repos)\n`;
           });
         } else {
           output += "📚 No collections found\n";
         }
       }
-      
+
       if (!output) {
         output = "No repositories or collections found.";
       }
-      
+
       return {
-        content: [{ type: "text", text: output }]
+        content: [{ type: "text", text: output }],
       };
     } catch (error) {
       return {
-        content: [{ type: "text", text: `Error: ${error.message}` }]
+        content: [{ type: "text", text: `Error: ${error.message}` }],
       };
     }
   }
@@ -115,39 +293,46 @@ server.tool(
   "Add a new repository to OpenMate",
   {
     name: z.string().min(1).describe("The name to identify this repository"),
-    path: z.string().min(1).describe("The filesystem path to the repository")
+    path: z.string().min(1).describe("The filesystem path to the repository"),
   },
   async ({ name, path: repoPath }) => {
     try {
       const store = loadStore();
       const normalized = normalizeName(name);
-      
+
       if (store.repos[normalized]) {
         return {
-          content: [{ type: "text", text: `❌ Repository '${name}' already exists` }]
+          content: [
+            { type: "text", text: `❌ Repository '${name}' already exists` },
+          ],
         };
       }
-      
+
       const expandedPath = repoPath.replace(/^~(?=$|[\\/])/, os.homedir());
       const resolvedPath = path.resolve(expandedPath);
-      
+
       const stats = fs.statSync(resolvedPath);
       if (!stats.isDirectory()) {
-        throw new Error('Path is not a directory');
+        throw new Error("Path is not a directory");
       }
-      
+
       store.repos[normalized] = {
         path: resolvedPath,
-        addedAt: new Date().toISOString()
+        addedAt: new Date().toISOString(),
       };
       saveStore(store);
-      
+
       return {
-        content: [{ type: "text", text: `✅ Added repository '${name}' -> '${resolvedPath}'` }]
+        content: [
+          {
+            type: "text",
+            text: `✅ Added repository '${name}' -> '${resolvedPath}'`,
+          },
+        ],
       };
     } catch (error) {
       return {
-        content: [{ type: "text", text: `❌ Error: ${error.message}` }]
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
       };
     }
   }
@@ -158,27 +343,29 @@ server.tool(
   "get-repo",
   "Get the path of a repository by name",
   {
-    name: z.string().min(1).describe("The name of the repository to look up")
+    name: z.string().min(1).describe("The name of the repository to look up"),
   },
   async ({ name }) => {
     try {
       const store = loadStore();
       const normalized = normalizeName(name);
       const repoData = store.repos[normalized];
-      
+
       if (!repoData) {
         return {
-          content: [{ type: "text", text: `❌ Repository '${name}' not found` }]
+          content: [
+            { type: "text", text: `❌ Repository '${name}' not found` },
+          ],
         };
       }
-      
-      const repoPath = typeof repoData === 'string' ? repoData : repoData.path;
+
+      const repoPath = typeof repoData === "string" ? repoData : repoData.path;
       return {
-        content: [{ type: "text", text: repoPath }]
+        content: [{ type: "text", text: repoPath }],
       };
     } catch (error) {
       return {
-        content: [{ type: "text", text: `❌ Error: ${error.message}` }]
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
       };
     }
   }
@@ -189,28 +376,30 @@ server.tool(
   "remove-repo",
   "Remove a repository from OpenMate",
   {
-    name: z.string().min(1).describe("The name of the repository to remove")
+    name: z.string().min(1).describe("The name of the repository to remove"),
   },
   async ({ name }) => {
     try {
       const store = loadStore();
       const normalized = normalizeName(name);
-      
+
       if (!store.repos[normalized]) {
         return {
-          content: [{ type: "text", text: `❌ Repository '${name}' not found` }]
+          content: [
+            { type: "text", text: `❌ Repository '${name}' not found` },
+          ],
         };
       }
-      
+
       delete store.repos[normalized];
       saveStore(store);
-      
+
       return {
-        content: [{ type: "text", text: `✅ Removed repository '${name}'` }]
+        content: [{ type: "text", text: `✅ Removed repository '${name}'` }],
       };
     } catch (error) {
       return {
-        content: [{ type: "text", text: `❌ Error: ${error.message}` }]
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
       };
     }
   }
@@ -222,34 +411,47 @@ server.tool(
   "Create a collection of repositories",
   {
     name: z.string().min(1).describe("The name of the collection"),
-    repos: z.string().min(1).describe("Comma-separated list of repository names")
+    repos: z
+      .string()
+      .min(1)
+      .describe("Comma-separated list of repository names"),
   },
   async ({ name, repos }) => {
     try {
       const store = loadStore();
       const normalized = normalizeName(name);
-      const repoList = repos.split(',').map(r => normalizeName(r.trim()));
-      
-      const missingRepos = repoList.filter(r => !store.repos[r]);
+      const repoList = repos.split(",").map((r) => normalizeName(r.trim()));
+
+      const missingRepos = repoList.filter((r) => !store.repos[r]);
       if (missingRepos.length > 0) {
         return {
-          content: [{ type: "text", text: `❌ Repositories not found: ${missingRepos.join(', ')}` }]
+          content: [
+            {
+              type: "text",
+              text: `❌ Repositories not found: ${missingRepos.join(", ")}`,
+            },
+          ],
         };
       }
-      
+
       store.collections[normalized] = {
         name: name,
         repos: repoList,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
       saveStore(store);
-      
+
       return {
-        content: [{ type: "text", text: `✅ Created collection '${name}' with ${repoList.length} repos` }]
+        content: [
+          {
+            type: "text",
+            text: `✅ Created collection '${name}' with ${repoList.length} repos`,
+          },
+        ],
       };
     } catch (error) {
       return {
-        content: [{ type: "text", text: `❌ Error: ${error.message}` }]
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
       };
     }
   }
@@ -260,28 +462,30 @@ server.tool(
   "delete-collection",
   "Delete a collection from OpenMate",
   {
-    name: z.string().min(1).describe("The name of the collection to delete")
+    name: z.string().min(1).describe("The name of the collection to delete"),
   },
   async ({ name }) => {
     try {
       const store = loadStore();
       const normalized = normalizeName(name);
-      
+
       if (!store.collections[normalized]) {
         return {
-          content: [{ type: "text", text: `❌ Collection '${name}' not found` }]
+          content: [
+            { type: "text", text: `❌ Collection '${name}' not found` },
+          ],
         };
       }
-      
+
       delete store.collections[normalized];
       saveStore(store);
-      
+
       return {
-        content: [{ type: "text", text: `✅ Deleted collection '${name}'` }]
+        content: [{ type: "text", text: `✅ Deleted collection '${name}'` }],
       };
     } catch (error) {
       return {
-        content: [{ type: "text", text: `❌ Error: ${error.message}` }]
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
       };
     }
   }
@@ -292,40 +496,52 @@ server.tool(
   "list-collection",
   "List repositories in a collection",
   {
-    name: z.string().optional().describe("Optional: The name of the collection to list")
+    name: z
+      .string()
+      .optional()
+      .describe("Optional: The name of the collection to list"),
   },
   async ({ name }) => {
     try {
       const store = loadStore();
-      
+
       if (!name) {
         const collections = Object.keys(store.collections);
         if (collections.length === 0) {
           return {
-            content: [{ type: "text", text: "No collections found" }]
+            content: [{ type: "text", text: "No collections found" }],
           };
         }
         return {
-          content: [{ type: "text", text: `Available collections: ${collections.join(', ')}` }]
+          content: [
+            {
+              type: "text",
+              text: `Available collections: ${collections.join(", ")}`,
+            },
+          ],
         };
       }
-      
+
       const normalized = normalizeName(name);
       const collection = store.collections[normalized];
-      
+
       if (!collection) {
         return {
-          content: [{ type: "text", text: `❌ Collection '${name}' not found` }]
+          content: [
+            { type: "text", text: `❌ Collection '${name}' not found` },
+          ],
         };
       }
-      
+
       const repos = collection.repos || [];
       return {
-        content: [{ type: "text", text: `Collection '${name}': ${repos.join(', ')}` }]
+        content: [
+          { type: "text", text: `Collection '${name}': ${repos.join(", ")}` },
+        ],
       };
     } catch (error) {
       return {
-        content: [{ type: "text", text: `❌ Error: ${error.message}` }]
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
       };
     }
   }
@@ -336,32 +552,212 @@ server.tool(
   "init-repo",
   "Add current directory as a repository",
   {
-    name: z.string().min(1).describe("The name to assign to the current directory")
+    name: z
+      .string()
+      .min(1)
+      .describe("The name to assign to the current directory"),
   },
   async ({ name }) => {
     try {
       const currentDir = process.cwd();
       const store = loadStore();
       const normalized = normalizeName(name);
-      
+
       if (store.repos[normalized]) {
         return {
-          content: [{ type: "text", text: `❌ Repository '${name}' already exists` }]
+          content: [
+            { type: "text", text: `❌ Repository '${name}' already exists` },
+          ],
         };
       }
-      
+
       store.repos[normalized] = {
         path: currentDir,
-        addedAt: new Date().toISOString()
+        addedAt: new Date().toISOString(),
       };
       saveStore(store);
-      
+
       return {
-        content: [{ type: "text", text: `✅ Added current directory as '${name}'` }]
+        content: [
+          { type: "text", text: `✅ Added current directory as '${name}'` },
+        ],
       };
     } catch (error) {
       return {
-        content: [{ type: "text", text: `❌ Error: ${error.message}` }]
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// NEW: Open repository in IDE
+server.tool(
+  "open-repo",
+  "Open a repository in a specific IDE",
+  {
+    name: z.string().min(1).describe("The name of the repository to open"),
+    ide: z
+      .enum(["vs", "ws", "cs", "ij", "pc"])
+      .describe(
+        "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm)"
+      ),
+  },
+  async ({ name, ide }) => {
+    try {
+      const store = loadStore();
+      const normalized = normalizeName(name);
+      const repoData = store.repos[normalized];
+
+      if (!repoData) {
+        return {
+          content: [
+            { type: "text", text: `❌ Repository '${name}' not found` },
+          ],
+        };
+      }
+
+      const repoPath = typeof repoData === "string" ? repoData : repoData.path;
+
+      // Check if path exists
+      if (!fs.existsSync(repoPath)) {
+        return {
+          content: [
+            { type: "text", text: `❌ Path does not exist: ${repoPath}` },
+          ],
+        };
+      }
+
+      const ideNames = {
+        vs: "VS Code",
+        ws: "Windsurf",
+        cs: "Cursor",
+        ij: "IntelliJ IDEA",
+        pc: "PyCharm",
+      };
+
+      // Open in the specified IDE
+      switch (ide) {
+        case "vs":
+          openVS(repoPath);
+          break;
+        case "ws":
+          openWS(repoPath);
+          break;
+        case "cs":
+          openCS(repoPath);
+          break;
+        case "ij":
+          openIJ(repoPath);
+          break;
+        case "pc":
+          openPC(repoPath);
+          break;
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `🚀 Opening '${name}' in ${ideNames[ide]}...\nPath: ${repoPath}`,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// NEW: Open collection in IDE
+server.tool(
+  "open-collection",
+  "Open all repositories in a collection in a specific IDE",
+  {
+    name: z.string().min(1).describe("The name of the collection to open"),
+    ide: z
+      .enum(["vs", "ws", "cs", "ij", "pc"])
+      .describe(
+        "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm)"
+      ),
+  },
+  async ({ name, ide }) => {
+    try {
+      const store = loadStore();
+      const normalized = normalizeName(name);
+      const collection = store.collections[normalized];
+
+      if (!collection) {
+        return {
+          content: [
+            { type: "text", text: `❌ Collection '${name}' not found` },
+          ],
+        };
+      }
+
+      const repos = collection.repos || [];
+      if (repos.length === 0) {
+        return {
+          content: [{ type: "text", text: `❌ Collection '${name}' is empty` }],
+        };
+      }
+
+      const ideNames = {
+        vs: "VS Code",
+        ws: "Windsurf",
+        cs: "Cursor",
+        ij: "IntelliJ IDEA",
+        pc: "PyCharm",
+      };
+
+      let output = `🚀 Opening collection '${name}' (${repos.length} repos) in ${ideNames[ide]}:\n\n`;
+      let openedCount = 0;
+
+      for (const repoName of repos) {
+        const repoData = store.repos[repoName];
+        if (repoData) {
+          const repoPath =
+            typeof repoData === "string" ? repoData : repoData.path;
+
+          if (fs.existsSync(repoPath)) {
+            output += `✅ ${repoName} -> ${repoPath}\n`;
+
+            // Open in the specified IDE
+            switch (ide) {
+              case "vs":
+                openVS(repoPath);
+                break;
+              case "ws":
+                openWS(repoPath);
+                break;
+              case "cs":
+                openCS(repoPath);
+                break;
+              case "ij":
+                openIJ(repoPath);
+                break;
+              case "pc":
+                openPC(repoPath);
+                break;
+            }
+            openedCount++;
+          } else {
+            output += `❌ ${repoName} -> Path not found: ${repoPath}\n`;
+          }
+        } else {
+          output += `❌ ${repoName} -> Repository not found in store\n`;
+        }
+      }
+
+      output += `\nOpened ${openedCount} of ${repos.length} repositories.`;
+
+      return {
+        content: [{ type: "text", text: output }],
+      };
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
       };
     }
   }

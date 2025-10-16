@@ -19,6 +19,12 @@ For more information, visit
 
 ### Features
 
+- Open repositories in your favorite editor:
+  - **VS Code** (`om vs <name>`)
+  - **Windsurf** (`om ws <name>`)
+  - **Cursor** (`om cs <name>`)
+  - **IntelliJ IDEA** (`om ij <name>`)
+  - **PyCharm** (`om pc <name>`)
 - List all repositories and collections
 - Add a new repository
 - Get repository path
