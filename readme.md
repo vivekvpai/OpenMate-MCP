@@ -46,7 +46,8 @@ For more information, visit
 npm install -g openmate-mcp
 ```
 
-Usage with Claude Desktop / Windsurf / Cursor
+### Use with Claude Desktop / Windsurf / Cursor
+
 Add configuration:
 
 ```json

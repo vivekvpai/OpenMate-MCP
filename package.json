@@ -1,6 +1,6 @@
 {
   "name": "openmate-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for OpenMate repository management",
   "type": "module",
   "main": "bin/server.js",
@@ -20,6 +20,8 @@
     "vscode",
     "windsurf",
     "cursor",
+    "intellij",
+    "pycharm",
     "productivity",
     "quick-open",
     "open repositories",
