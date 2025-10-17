@@ -220,24 +220,23 @@ function attemptLaunch(candidates) {
   tryOne(0);
 }
 
-// Create server instance
-const server = new McpServer({
-  name: "openmate",
-  version: "1.0.0",
-});
-
 // Read package.json using ES modules
 const pkg = JSON.parse(
   await fs.promises.readFile(new URL("../package.json", import.meta.url))
 );
 
+// Create server instance
+const server = new McpServer({
+  name: "openmate-mcp",
+  version: pkg.version,
+});
+
 server.tool(
-  "show OpenMate-MCP version",
-  "Show the version of OpenMate-MCP",
-  "Show the version of OM MCP",
+  "show openmate-mcp version",
+  "Show the version of om-mcp",
   async () => {
     return {
-      content: [{ type: "text", text: `OpenMate-MCP version: ${pkg.version}` }],
+      content: [{ type: "text", text: `OpenMate MCP version: ${pkg.version}` }],
     };
   }
 );
@@ -245,8 +244,8 @@ server.tool(
 // List repositories and collections
 server.tool(
   "list-repos",
-  "List all repositories and collections from OpenMate",
-  "List all repositories and collections from OM",
+  "List all repositories and collections from openmate using openmate-mcp",
+  "List all repositories and collections from om using om-mcp",
   {
     type: z
       .enum(["all", "repos", "collections"])
@@ -307,8 +306,8 @@ server.tool(
 // Add a new repository
 server.tool(
   "add-repo",
-  "Add a new repository to OpenMate",
-  "Add a new repository to OM ",
+  "Add a new repository to OpenMate using openmate-mcp",
+  "Add a new repository to om using om-mcp",
   {
     name: z.string().min(1).describe("The name to identify this repository"),
     path: z.string().min(1).describe("The filesystem path to the repository"),
@@ -359,8 +358,8 @@ server.tool(
 // Get repository path
 server.tool(
   "get-repo",
-  "Get the path of a repository by name from OpenMate",
-  "Get the path of a repository by name from OM",
+  "Get the path of a repository by name using openmate-mcp",
+  "Get the path of a repository by name using om-mcp",
   {
     name: z.string().min(1).describe("The name of the repository to look up"),
   },
@@ -393,8 +392,8 @@ server.tool(
 // Remove a repository
 server.tool(
   "remove-repo",
-  "Remove a repository from OpenMate",
-  "Remove a repository from OM",
+  "Remove a repository from OpenMate using openmate-mcp",
+  "Remove a repository from om using om-mcp",
   {
     name: z.string().min(1).describe("The name of the repository to remove"),
   },
@@ -428,8 +427,8 @@ server.tool(
 // Add a collection
 server.tool(
   "add-collection",
-  "Create a collection of repositories in OpenMate",
-  "Create a collection of repositories in OM",
+  "Create a collection of repositories using openmate-mcp",
+  "Create a collection of repositories using om-mcp",
   {
     name: z.string().min(1).describe("The name of the collection"),
     repos: z
@@ -481,8 +480,8 @@ server.tool(
 // Delete a collection
 server.tool(
   "delete-collection",
-  "Delete a collection from OpenMate",
-  "Delete a collection from OM",
+  "Delete a collection from OpenMate using openmate-mcp",
+  "Delete a collection from om using om-mcp",
   {
     name: z.string().min(1).describe("The name of the collection to delete"),
   },
@@ -516,8 +515,8 @@ server.tool(
 // List collection
 server.tool(
   "list-collection",
-  "List repositories in a collection from OpenMate",
-  "List repositories in a collection from OM",
+  "List repositories in a collection using openmate-mcp",
+  "List repositories in a collection using om-mcp",
   {
     name: z
       .string()
@@ -617,7 +616,8 @@ server.tool(
 // Open repository in IDE
 server.tool(
   "open-repo",
-  "Open a repository in a specific IDE",
+  "Open a repository in a specific IDE using openmate-mcp",
+  "Open a repository in a specific IDE using om-mcp",
   {
     name: z.string().min(1).describe("The name of the repository to open"),
     ide: z
@@ -697,7 +697,8 @@ server.tool(
 // Open collection in IDE
 server.tool(
   "open-collection",
-  "Open all repositories in a collection in a specific IDE",
+  "Open all repositories in a collection in a specific IDE using openmate-mcp",
+  "Open all repositories in a collection in a specific IDE using om-mcp",
   {
     name: z.string().min(1).describe("The name of the collection to open"),
     ide: z
