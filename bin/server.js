@@ -226,10 +226,27 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
+// Read package.json using ES modules
+const pkg = JSON.parse(
+  await fs.promises.readFile(new URL("../package.json", import.meta.url))
+);
+
+server.tool(
+  "show OpenMate-MCP version",
+  "Show the version of OpenMate-MCP",
+  "Show the version of OM MCP",
+  async () => {
+    return {
+      content: [{ type: "text", text: `OpenMate-MCP version: ${pkg.version}` }],
+    };
+  }
+);
+
 // List repositories and collections
 server.tool(
   "list-repos",
-  "List all repositories and collections",
+  "List all repositories and collections from OpenMate",
+  "List all repositories and collections from OM",
   {
     type: z
       .enum(["all", "repos", "collections"])
@@ -291,6 +308,7 @@ server.tool(
 server.tool(
   "add-repo",
   "Add a new repository to OpenMate",
+  "Add a new repository to OM ",
   {
     name: z.string().min(1).describe("The name to identify this repository"),
     path: z.string().min(1).describe("The filesystem path to the repository"),
@@ -341,7 +359,8 @@ server.tool(
 // Get repository path
 server.tool(
   "get-repo",
-  "Get the path of a repository by name",
+  "Get the path of a repository by name from OpenMate",
+  "Get the path of a repository by name from OM",
   {
     name: z.string().min(1).describe("The name of the repository to look up"),
   },
@@ -375,6 +394,7 @@ server.tool(
 server.tool(
   "remove-repo",
   "Remove a repository from OpenMate",
+  "Remove a repository from OM",
   {
     name: z.string().min(1).describe("The name of the repository to remove"),
   },
@@ -408,7 +428,8 @@ server.tool(
 // Add a collection
 server.tool(
   "add-collection",
-  "Create a collection of repositories",
+  "Create a collection of repositories in OpenMate",
+  "Create a collection of repositories in OM",
   {
     name: z.string().min(1).describe("The name of the collection"),
     repos: z
@@ -461,6 +482,7 @@ server.tool(
 server.tool(
   "delete-collection",
   "Delete a collection from OpenMate",
+  "Delete a collection from OM",
   {
     name: z.string().min(1).describe("The name of the collection to delete"),
   },
@@ -494,7 +516,8 @@ server.tool(
 // List collection
 server.tool(
   "list-collection",
-  "List repositories in a collection",
+  "List repositories in a collection from OpenMate",
+  "List repositories in a collection from OM",
   {
     name: z
       .string()
@@ -548,49 +571,50 @@ server.tool(
 );
 
 // Initialize current directory
-server.tool(
-  "init-repo",
-  "Add current directory as a repository",
-  {
-    name: z
-      .string()
-      .min(1)
-      .describe("The name to assign to the current directory"),
-  },
-  async ({ name }) => {
-    try {
-      const currentDir = process.cwd();
-      const store = loadStore();
-      const normalized = normalizeName(name);
+// server.tool(
+//   "init-repo",
+//   "Add current directory as a repository. Take the path of the current directory as the currentDir",
+//   {
+//     name: z
+//       .string()
+//       .min(1)
+//       .describe("The name to assign to the current directory"),
+//     path: z.string().optional().describe("Optional: The path to the directory"),
+//   },
+//   async ({ name, path }) => {
+//     try {
+//       const currentDir = process.cwd();
+//       const store = loadStore();
+//       const normalized = normalizeName(name);
 
-      if (store.repos[normalized]) {
-        return {
-          content: [
-            { type: "text", text: `❌ Repository '${name}' already exists` },
-          ],
-        };
-      }
+//       if (store.repos[normalized]) {
+//         return {
+//           content: [
+//             { type: "text", text: `❌ Repository '${name}' already exists` },
+//           ],
+//         };
+//       }
 
-      store.repos[normalized] = {
-        path: currentDir,
-        addedAt: new Date().toISOString(),
-      };
-      saveStore(store);
+//       store.repos[normalized] = {
+//         path: path || currentDir,
+//         addedAt: new Date().toISOString(),
+//       };
+//       saveStore(store);
 
-      return {
-        content: [
-          { type: "text", text: `✅ Added current directory as '${name}'` },
-        ],
-      };
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
-      };
-    }
-  }
-);
+//       return {
+//         content: [
+//           { type: "text", text: `✅ Added current directory as '${name}'` },
+//         ],
+//       };
+//     } catch (error) {
+//       return {
+//         content: [{ type: "text", text: `❌ Error: ${error.message}` }],
+//       };
+//     }
+//   }
+// );
 
-// NEW: Open repository in IDE
+// Open repository in IDE
 server.tool(
   "open-repo",
   "Open a repository in a specific IDE",
@@ -670,7 +694,7 @@ server.tool(
   }
 );
 
-// NEW: Open collection in IDE
+// Open collection in IDE
 server.tool(
   "open-collection",
   "Open all repositories in a collection in a specific IDE",

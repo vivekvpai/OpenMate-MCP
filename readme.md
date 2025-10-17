@@ -2,6 +2,12 @@
 
 <img src="./assets/gif.gif" alt="OpenMate" width="600">
 
+[![Visitors](https://visitor-badge.laobi.icu/badge?page_id=vivekvpai.OpenMate-MCP)](https://github.com/vivekvpai/OpenMate-MCP)
+[![NPM Downloads](https://img.shields.io/npm/dt/openmate-mcp)](https://www.npmjs.com/package/openmate-mcp)
+[![NPM Version](https://img.shields.io/npm/v/openmate-mcp)](https://www.npmjs.com/package/openmate-mcp)
+[![GitHub Stars](https://img.shields.io/github/stars/vivekvpai/OpenMate-MCP?style=social)](https://github.com/vivekvpai/OpenMate-MCP)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/vivekvpai/OpenMate-MCP/blob/main/LICENSE)
+
 An MCP (Model Context Protocol) server for managing repositories and collections with OpenMate.
 
 > Note: This MCP server work only when OpenMate CLI is installed.
