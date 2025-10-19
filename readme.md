@@ -12,16 +12,14 @@ An MCP (Model Context Protocol) server for managing repositories and collections
 
 > Note: This MCP server work only when OpenMate CLI is installed.
 
-## OpenMate CLI
+# Table of Contents
 
-```bash
-npm install -g openmate
-```
+- [OpenMate MCP Server](#openmate-mcp-server)
+- [OpenMate CLI](#openmate-cli)
+- [OpenMate UI](#openmate-ui)
 
-For more information, visit
 
-- [OpenMate CLI (GitHub)](https://github.com/vivekvpai/OpenMate).
-- [OpenMate CLI (npm)](https://www.npmjs.com/package/openmate).
+## OpenMate MCP Server
 
 ### Features
 
@@ -40,7 +38,7 @@ For more information, visit
 - List collection contents
 - Add current directory
 
-## Installation
+### Installation
 
 ```bash
 npm install -g openmate-mcp
@@ -69,11 +67,25 @@ Add configuration:
 - add-collection: Create a collection
 - delete-collection: Delete a collection
 - list-collection: List collection contents
-- init-repo: Add current directory
 
 ---
 
-# OpenMate UI
+## OpenMate CLI
+
+### Installation
+
+```bash
+npm install -g openmate
+```
+
+For more information, visit
+
+- [OpenMate CLI (GitHub)](https://github.com/vivekvpai/OpenMate).
+- [OpenMate CLI (npm)](https://www.npmjs.com/package/openmate).
+
+---
+
+## OpenMate UI
 
 OpenMate UI is a desktop application that allows you to manage and open your local repositories in your favorite editor with quick shortcuts.
 
