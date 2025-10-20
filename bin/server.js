@@ -232,7 +232,7 @@ const server = new McpServer({
 });
 
 server.tool(
-  "show openmate-mcp version",
+  "show-version",
   "Show the version of openmate-mcp or om-mcp",
   async () => {
     return {
