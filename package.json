@@ -1,6 +1,6 @@
 {
   "name": "openmate-mcp",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "MCP server for OpenMate repository management",
   "type": "module",
   "main": "bin/server.js",

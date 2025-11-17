@@ -91,7 +91,7 @@ OpenMate UI is a desktop application that allows you to manage and open your loc
 
 > **Note:** supports windows for now
 
-### Download OpenMate UI from [here](https://github.com/vivekvpai/OpenMate/releases).
+### Download OpenMate UI from [here](https://github.com/vivekvpai/OpenMate/releases/tag/v1.3.3).
 
 ## ✅ Features
 
