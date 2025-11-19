@@ -18,7 +18,6 @@ An MCP (Model Context Protocol) server for managing repositories and collections
 - [OpenMate CLI](#openmate-cli)
 - [OpenMate UI](#openmate-ui)
 
-
 ## OpenMate MCP Server
 
 ### Features
@@ -29,6 +28,7 @@ An MCP (Model Context Protocol) server for managing repositories and collections
   - **Cursor** (`om cs <name>`)
   - **IntelliJ IDEA** (`om ij <name>`)
   - **PyCharm** (`om pc <name>`)
+  - **Antigravity** (`om ag <name>`)
 - List all repositories and collections
 - Add a new repository
 - Get repository path
@@ -44,7 +44,7 @@ An MCP (Model Context Protocol) server for managing repositories and collections
 npm install -g openmate-mcp
 ```
 
-### Use with Claude Desktop / Windsurf / Cursor
+### Use with Claude Desktop / Windsurf / Cursor / Antigravity
 
 Add configuration:
 
@@ -91,7 +91,7 @@ OpenMate UI is a desktop application that allows you to manage and open your loc
 
 > **Note:** supports windows for now
 
-### Download OpenMate UI from [here](https://github.com/vivekvpai/OpenMate/releases/tag/v1.3.3).
+### Download OpenMate UI from [here](https://github.com/vivekvpai/OpenMate/releases).
 
 ## ✅ Features
 
@@ -103,6 +103,7 @@ OpenMate UI is a desktop application that allows you to manage and open your loc
   - **Cursor** (`om cs <name>`)
   - **IntelliJ IDEA** (`om ij <name>`)
   - **PyCharm** (`om pc <name>`)
+  - **Antigravity** (`om ag <name>`)
 - Smart suggestions when typing partial repository names:
   - Shows matching repositories and collections as you type partial name and hit enter
   - Displays repositories and collections in separate, clearly labeled lists
