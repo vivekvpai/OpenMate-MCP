@@ -203,6 +203,19 @@ function openPC(repoPath) {
   });
 }
 
+function openAG(repoPath) {
+  if (process.platform === "darwin") {
+    spawn("open", ["-a", "Antigravity", repoPath], {
+      stdio: "ignore",
+      detached: true,
+    });
+  } else {
+    attemptLaunch([{ cmd: "antigravity", args: [repoPath] }], {
+      onFail: () => console.error("❌ Antigravity CLI not found."),
+    });
+  }
+}
+
 function attemptLaunch(candidates) {
   const tryOne = (i) => {
     if (i >= candidates.length) return;
@@ -613,9 +626,9 @@ server.tool(
   {
     name: z.string().min(1).describe("The name of the repository to open"),
     ide: z
-      .enum(["vs", "ws", "cs", "ij", "pc"])
+      .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
       .describe(
-        "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm)"
+        "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm), ag (Antigravity)"
       ),
   },
   async ({ name, ide }) => {
@@ -649,6 +662,7 @@ server.tool(
         cs: "Cursor",
         ij: "IntelliJ IDEA",
         pc: "PyCharm",
+        ag: "Antigravity",
       };
 
       // Open in the specified IDE
@@ -667,6 +681,9 @@ server.tool(
           break;
         case "pc":
           openPC(repoPath);
+          break;
+        case "ag":
+          openAG(repoPath);
           break;
       }
 
@@ -693,9 +710,9 @@ server.tool(
   {
     name: z.string().min(1).describe("The name of the collection to open"),
     ide: z
-      .enum(["vs", "ws", "cs", "ij", "pc"])
+      .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
       .describe(
-        "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm)"
+        "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm), ag (Antigravity)"
       ),
   },
   async ({ name, ide }) => {
@@ -725,6 +742,7 @@ server.tool(
         cs: "Cursor",
         ij: "IntelliJ IDEA",
         pc: "PyCharm",
+        ag: "Antigravity",
       };
 
       let output = `🚀 Opening collection '${name}' (${repos.length} repos) in ${ideNames[ide]}:\n\n`;
@@ -755,6 +773,9 @@ server.tool(
                 break;
               case "pc":
                 openPC(repoPath);
+                break;
+              case "ag":
+                openAG(repoPath);
                 break;
             }
             openedCount++;
