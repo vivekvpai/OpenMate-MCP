@@ -29,6 +29,9 @@ An MCP (Model Context Protocol) server for managing repositories and collections
   - **IntelliJ IDEA** (`om ij <name>`)
   - **PyCharm** (`om pc <name>`)
   - **Antigravity** (`om ag <name>`)
+- **Preferred IDE support**:
+  - Set a default IDE for any repo or collection (`om ide <name> <ide>`)
+  - Open without specifying IDE to use default (`om d <name>`)
 - List all repositories and collections
 - Add a new repository
 - Get repository path
@@ -67,6 +70,9 @@ Add configuration:
 - add-collection: Create a collection
 - delete-collection: Delete a collection
 - list-collection: List collection contents
+- set-ide: Set a preferred IDE for a repo or collection
+- open-repo: Open a repository (IDE optional if default set)
+- open-collection: Open all repos in a collection (IDE optional if default set)
 
 ---
 
@@ -104,6 +110,9 @@ OpenMate UI is a desktop application that allows you to manage and open your loc
   - **IntelliJ IDEA** (`om ij <name>`)
   - **PyCharm** (`om pc <name>`)
   - **Antigravity** (`om ag <name>`)
+- **Preferred IDE**:
+  - Set a default IDE for any repository or collection with `om ide <name> <ide>`
+  - Open it directly without specifying the IDE key: `om d <name>`
 - Smart suggestions when typing partial repository names:
   - Shows matching repositories and collections as you type partial name and hit enter
   - Displays repositories and collections in separate, clearly labeled lists
