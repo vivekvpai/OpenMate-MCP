@@ -631,6 +631,7 @@ server.tool(
         "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm), ag (Antigravity)"
       ),
   },
+
   async ({ name, ide }) => {
     try {
       const store = loadStore();
@@ -791,6 +792,82 @@ server.tool(
 
       return {
         content: [{ type: "text", text: output }],
+      };
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// Set preferred IDE
+server.tool(
+  "set-ide",
+  "Set a preferred IDE for a repository or collection",
+  {
+    name: z
+      .string()
+      .min(1)
+      .describe("The name of the repository or collection"),
+    ide: z
+      .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
+      .describe("Preferred IDE: vs, ws, cs, ij, pc, ag"),
+  },
+  async ({ name, ide }) => {
+    try {
+      const store = loadStore();
+      const normalized = normalizeName(name);
+
+      let found = false;
+
+      // Check repos
+      if (store.repos[normalized]) {
+        let repoData = store.repos[normalized];
+        // Convert string legacy format to object if needed
+        if (typeof repoData === "string") {
+          repoData = { path: repoData, addedAt: new Date().toISOString() };
+        }
+        repoData.ide = ide;
+        store.repos[normalized] = repoData;
+        found = true;
+      }
+
+      // Check collections
+      if (store.collections[normalized]) {
+        store.collections[normalized].ide = ide;
+        found = true;
+      }
+
+      if (!found) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `❌ No repository or collection found with name '${name}'`,
+            },
+          ],
+        };
+      }
+
+      saveStore(store);
+
+      const ideNames = {
+        vs: "VS Code",
+        ws: "Windsurf",
+        cs: "Cursor",
+        ij: "IntelliJ IDEA",
+        pc: "PyCharm",
+        ag: "Antigravity",
+      };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `✅ Set preferred IDE for '${name}' to ${ideNames[ide]}`,
+          },
+        ],
       };
     } catch (error) {
       return {
