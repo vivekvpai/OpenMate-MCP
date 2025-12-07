@@ -627,6 +627,7 @@ server.tool(
     name: z.string().min(1).describe("The name of the repository to open"),
     ide: z
       .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
+      .optional()
       .describe(
         "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm), ag (Antigravity)"
       ),
@@ -657,6 +658,26 @@ server.tool(
         };
       }
 
+      let targetIde = ide;
+
+      // If no IDE specified, check for preference
+      if (!targetIde) {
+        const preferred =
+          typeof repoData === "string" ? undefined : repoData.ide;
+        if (preferred) {
+          targetIde = preferred;
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `❌ No IDE specified and no preferred IDE set for '${name}'. Use 'om ide ${name} <ide>' to set a default.`,
+              },
+            ],
+          };
+        }
+      }
+
       const ideNames = {
         vs: "VS Code",
         ws: "Windsurf",
@@ -667,7 +688,7 @@ server.tool(
       };
 
       // Open in the specified IDE
-      switch (ide) {
+      switch (targetIde) {
         case "vs":
           openVS(repoPath);
           break;
@@ -692,7 +713,7 @@ server.tool(
         content: [
           {
             type: "text",
-            text: `🚀 Opening '${name}' in ${ideNames[ide]}...\nPath: ${repoPath}`,
+            text: `🚀 Opening '${name}' in ${ideNames[targetIde]}...\nPath: ${repoPath}`,
           },
         ],
       };
@@ -712,6 +733,7 @@ server.tool(
     name: z.string().min(1).describe("The name of the collection to open"),
     ide: z
       .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
+      .optional()
       .describe(
         "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm), ag (Antigravity)"
       ),
@@ -737,6 +759,24 @@ server.tool(
         };
       }
 
+      let targetIde = ide;
+
+      // If no IDE specified, check for preference
+      if (!targetIde) {
+        if (collection.ide) {
+          targetIde = collection.ide;
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `❌ No IDE specified and no preferred IDE set for collection '${name}'. Use 'om ide ${name} <ide>' to set a default.`,
+              },
+            ],
+          };
+        }
+      }
+
       const ideNames = {
         vs: "VS Code",
         ws: "Windsurf",
@@ -746,7 +786,7 @@ server.tool(
         ag: "Antigravity",
       };
 
-      let output = `🚀 Opening collection '${name}' (${repos.length} repos) in ${ideNames[ide]}:\n\n`;
+      let output = `🚀 Opening collection '${name}' (${repos.length} repos) in ${ideNames[targetIde]}:\n\n`;
       let openedCount = 0;
 
       for (const repoName of repos) {
@@ -759,7 +799,7 @@ server.tool(
             output += `✅ ${repoName} -> ${repoPath}\n`;
 
             // Open in the specified IDE
-            switch (ide) {
+            switch (targetIde) {
               case "vs":
                 openVS(repoPath);
                 break;
