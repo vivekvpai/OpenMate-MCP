@@ -31,6 +31,7 @@ An MCP (Model Context Protocol) server for managing repositories and collections
   - **Antigravity** (`om ag <name>`)
 - **Preferred IDE support**:
   - Set a default IDE for any repo or collection (`om ide <name> <ide>`)
+  - Show the current default IDE (global or repo-specific) (`om ide-show [name]`)
   - Open without specifying IDE to use default (`om d <name>`)
 - List all repositories and collections
 - Add a new repository
@@ -71,8 +72,10 @@ Add configuration:
 - delete-collection: Delete a collection
 - list-collection: List collection contents
 - set-ide: Set a preferred IDE for a repo or collection
+- show-default-ide: Show global or repository-specific default IDE
 - open-repo: Open a repository (IDE optional if default set)
 - open-collection: Open all repos in a collection (IDE optional if default set)
+- show-version: Show current version
 
 ---
 
@@ -112,6 +115,7 @@ OpenMate UI is a desktop application that allows you to manage and open your loc
   - **Antigravity** (`om ag <name>`)
 - **Preferred IDE**:
   - Set a default IDE for any repository or collection with `om ide <name> <ide>`
+  - Show the current default IDE (global or repo-specific) with `om ide-show [name]`
   - Open it directly without specifying the IDE key: `om d <name>`
 - Smart suggestions when typing partial repository names:
   - Shows matching repositories and collections as you type partial name and hit enter
