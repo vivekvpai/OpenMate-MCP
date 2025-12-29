@@ -12,6 +12,18 @@ import { spawn } from "child_process";
 const STORE_DIR = path.join(os.homedir(), ".openmate");
 const STORE_FILE = path.join(STORE_DIR, "repos.json");
 
+// IDE Configuration
+const IDE_CONFIG = {
+  ag: "Antigravity",
+  cs: "Cursor",
+  vs: "VS Code",
+  ws: "Windsurf",
+  ij: "IntelliJ IDEA",
+  pc: "PyCharm",
+};
+
+const IDE_ENUMS = Object.keys(IDE_CONFIG);
+
 // Helper functions
 function ensureStore() {
   if (!fs.existsSync(STORE_DIR)) fs.mkdirSync(STORE_DIR, { recursive: true });
@@ -685,10 +697,12 @@ server.tool(
   {
     name: z.string().min(1).describe("The name of the repository to open"),
     ide: z
-      .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
+      .enum(IDE_ENUMS)
       .optional()
       .describe(
-        "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm), ag (Antigravity)"
+        `IDE to open in: ${Object.entries(IDE_CONFIG)
+          .map(([k, v]) => `${k} (${v})`)
+          .join(", ")}`
       ),
   },
 
@@ -737,14 +751,7 @@ server.tool(
         }
       }
 
-      const ideNames = {
-        vs: "VS Code",
-        ws: "Windsurf",
-        cs: "Cursor",
-        ij: "IntelliJ IDEA",
-        pc: "PyCharm",
-        ag: "Antigravity",
-      };
+      const ideNames = IDE_CONFIG;
 
       // Open in the specified IDE
       switch (targetIde) {
@@ -791,10 +798,12 @@ server.tool(
   {
     name: z.string().min(1).describe("The name of the collection to open"),
     ide: z
-      .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
+      .enum(IDE_ENUMS)
       .optional()
       .describe(
-        "IDE to open in: vs (VS Code), ws (Windsurf), cs (Cursor), ij (IntelliJ), pc (PyCharm), ag (Antigravity)"
+        `IDE to open in: ${Object.entries(IDE_CONFIG)
+          .map(([k, v]) => `${k} (${v})`)
+          .join(", ")}`
       ),
   },
   async ({ name, ide }) => {
@@ -836,14 +845,7 @@ server.tool(
         }
       }
 
-      const ideNames = {
-        vs: "VS Code",
-        ws: "Windsurf",
-        cs: "Cursor",
-        ij: "IntelliJ IDEA",
-        pc: "PyCharm",
-        ag: "Antigravity",
-      };
+      const ideNames = IDE_CONFIG;
 
       let output = `🚀 Opening collection '${name}' (${repos.length} repos) in ${ideNames[targetIde]}:\n\n`;
       let openedCount = 0;
@@ -909,22 +911,13 @@ server.tool(
       .string()
       .optional()
       .describe("Optional: The name of the repository or collection"),
-    ide: z
-      .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
-      .describe("Preferred IDE: vs, ws, cs, ij, pc, ag"),
+    ide: z.enum(IDE_ENUMS).describe(`Preferred IDE: ${IDE_ENUMS.join(", ")}`),
   },
   async ({ name, ide }) => {
     try {
       const store = loadStore();
 
-      const ideNames = {
-        vs: "VS Code",
-        ws: "Windsurf",
-        cs: "Cursor",
-        ij: "IntelliJ IDEA",
-        pc: "PyCharm",
-        ag: "Antigravity",
-      };
+      const ideNames = IDE_CONFIG;
 
       if (!name) {
         store.ide_default = ide;
