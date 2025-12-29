@@ -254,6 +254,61 @@ server.tool(
   }
 );
 
+// Show default IDE
+server.tool(
+  "show-default-ide",
+  "Show the default IDE for a repository or the global default",
+  {
+    name: z
+      .string()
+      .optional()
+      .describe("The name of the repository to check (optional)"),
+  },
+  async ({ name }) => {
+    try {
+      const store = loadStore();
+      const globalDefault = store.ide_default || "ag";
+
+      if (!name) {
+        return {
+          content: [
+            { type: "text", text: `Global default IDE: ${globalDefault}` },
+          ],
+        };
+      }
+
+      const normalized = normalizeName(name);
+      const repoData = store.repos[normalized];
+
+      if (!repoData) {
+        return {
+          content: [
+            { type: "text", text: `❌ Repository '${name}' not found` },
+          ],
+        };
+      }
+
+      const repoIde = typeof repoData === "string" ? null : repoData.ide;
+      const effectiveIde = repoIde || globalDefault;
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Default IDE for '${name}': ${effectiveIde}${
+              repoIde ? " (Repo set)" : " (Global default)"
+            }`,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `❌ Error: ${error.message}` }],
+      };
+    }
+  }
+);
+
 // List repositories and collections
 server.tool(
   "list-repos",
@@ -276,7 +331,9 @@ server.tool(
           output += "📁 Repositories:\n";
           repoEntries.forEach(([name, data], index) => {
             const repoPath = typeof data === "string" ? data : data.path;
-            output += `  ${index + 1}. ${name} -> ${repoPath}\n`;
+            const ide = typeof data === "string" ? null : data.ide;
+            const ideStr = ide ? ` (IDE: ${ide})` : "";
+            output += `  ${index + 1}. ${name} -> ${repoPath}${ideStr}\n`;
           });
           output += "\n";
         } else {
@@ -291,9 +348,11 @@ server.tool(
           collectionEntries.forEach(([key, collection], index) => {
             const repos =
               collection.repos || (Array.isArray(collection) ? collection : []);
+            const ide = collection.ide;
+            const ideStr = ide ? ` (IDE: ${ide})` : "";
             output += `  ${index + 1}. ${collection.name || key} (${
               repos.length
-            } repos)\n`;
+            } repos)${ideStr}\n`;
           });
         } else {
           output += "📚 No collections found\n";
@@ -848,8 +907,8 @@ server.tool(
   {
     name: z
       .string()
-      .min(1)
-      .describe("The name of the repository or collection"),
+      .optional()
+      .describe("Optional: The name of the repository or collection"),
     ide: z
       .enum(["vs", "ws", "cs", "ij", "pc", "ag"])
       .describe("Preferred IDE: vs, ws, cs, ij, pc, ag"),
@@ -857,8 +916,30 @@ server.tool(
   async ({ name, ide }) => {
     try {
       const store = loadStore();
-      const normalized = normalizeName(name);
 
+      const ideNames = {
+        vs: "VS Code",
+        ws: "Windsurf",
+        cs: "Cursor",
+        ij: "IntelliJ IDEA",
+        pc: "PyCharm",
+        ag: "Antigravity",
+      };
+
+      if (!name) {
+        store.ide_default = ide;
+        saveStore(store);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `✅ Set global default IDE to ${ideNames[ide]}`,
+            },
+          ],
+        };
+      }
+
+      const normalized = normalizeName(name);
       let found = false;
 
       // Check repos
@@ -891,15 +972,6 @@ server.tool(
       }
 
       saveStore(store);
-
-      const ideNames = {
-        vs: "VS Code",
-        ws: "Windsurf",
-        cs: "Cursor",
-        ij: "IntelliJ IDEA",
-        pc: "PyCharm",
-        ag: "Antigravity",
-      };
 
       return {
         content: [
